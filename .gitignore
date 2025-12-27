@@ -1,0 +1,6 @@
+data
+bin
+gitleaks-report.json
+.github/instructions
+coverage.txt
+.DS_Store

@@ -1,0 +1,52 @@
+name: ui
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ui/**'
+      - '.github/workflows/ui.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'ui/**'
+      - '.github/workflows/ui.yml'
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+
+jobs:
+  ui-checks:
+    name: UI Checks (lint)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.x'
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('ui/package-lock.json') }}
+
+      - name: Run lint
+        id: lint
+        run: make check-ui
+
+      - name: Check build
+        run: |
+          make build-ui
+          git diff --exit-code
